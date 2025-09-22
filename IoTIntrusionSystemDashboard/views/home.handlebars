@@ -1,0 +1,55 @@
+<div class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">{{pageTitle}}</h1>
+                <p class="lead mb-4">Protect your IoT devices with advanced intrusion detection and real-time monitoring</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="/auth/login" class="btn btn-light btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </a>
+                    <a href="/auth/register" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="display-6 fw-semibold">Key Features</h2>
+            </div>
+        </div>
+        <div class="row g-4">
+            {{#each features}}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <div class="fs-1 mb-3">{{this.icon}}</div>
+                        <h5 class="card-title fw-semibold">{{this.title}}</h5>
+                        <p class="card-text text-muted">{{this.description}}</p>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+<div class="cta-section bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-6">
+                <h2 class="display-6 fw-semibold mb-3">Ready to Secure Your IoT Network?</h2>
+                <p class="lead text-muted mb-4">Join thousands of users who trust our platform to protect their connected devices</p>
+                <a href="/auth/register" class="btn btn-primary btn-lg">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Start Free Trial
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
