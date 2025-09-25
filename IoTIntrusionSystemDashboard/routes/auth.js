@@ -34,47 +34,53 @@ router.post('/login', async (req, res, next) => {
     const { email, password } = req.body;
     
     if (!email || !password) {
-      return res.render('auth/login', {
-        title: 'Login - IoT Intrusion System',
-        pageTitle: 'Login',
-        error: 'Please provide both email and password'
+      routeLogger.warn('Login attempt with missing credentials', {
+        email: email || 'missing',
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       });
+      return res.redirect('/access-denied?from=login');
     }
     
     // Find user by email
     const result = await db.query(
-      'SELECT id, name, email, password_hash, is_active FROM users WHERE email = $1',
+      'SELECT id, name, email, password_hash, role, is_active FROM users WHERE email = $1',
       [email]
     );
     
     if (result.rows.length === 0) {
-      return res.render('auth/login', {
-        title: 'Login - IoT Intrusion System',
-        pageTitle: 'Login',
-        error: 'Invalid email or password'
+      routeLogger.warn('Login attempt with invalid email', {
+        email: email,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       });
+      return res.redirect('/access-denied?from=login');
     }
     
     const user = result.rows[0];
     
     // Check if user is active
     if (!user.is_active) {
-      return res.render('auth/login', {
-        title: 'Login - IoT Intrusion System',
-        pageTitle: 'Login',
-        error: 'Account is deactivated. Please contact administrator.'
+      routeLogger.warn('Login attempt with deactivated account', {
+        email: email,
+        userId: user.id,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       });
+      return res.redirect('/access-denied?from=login');
     }
     
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     
     if (!isValidPassword) {
-      return res.render('auth/login', {
-        title: 'Login - IoT Intrusion System',
-        pageTitle: 'Login',
-        error: 'Invalid email or password'
+      routeLogger.warn('Login attempt with invalid password', {
+        email: email,
+        userId: user.id,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       });
+      return res.redirect('/access-denied?from=login');
     }
     
     // Update last login timestamp
@@ -88,7 +94,8 @@ router.post('/login', async (req, res, next) => {
     req.session.user = {
       id: user.id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      role: user.role
     };
     
     // Redirect to the originally requested page or dashboard

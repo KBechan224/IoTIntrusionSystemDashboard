@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "init": "node ./utils/initApp.js",
+    "db:migrate": "node ./utils/migrateDatabase.js migrate",
+    "db:status": "node ./utils/migrateDatabase.js status"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

@@ -19,6 +19,7 @@ var authRouter = require('./routes/auth');
 var dashboardRouter = require('./routes/dashboard');
 var devicesRouter = require('./routes/devices');
 var alertsRouter = require('./routes/alerts');
+var deviceAccessRouter = require('./routes/deviceAccess');
 
 // Import authentication middleware
 const { attachUser, redirectIfAuth } = require('./middleware/auth');
@@ -29,7 +30,12 @@ var app = express();
 app.engine('handlebars', engine({
   defaultLayout: 'main',
   layoutsDir: path.join(__dirname, 'views/layouts/'),
-  partialsDir: path.join(__dirname, 'views/partials/')
+  partialsDir: path.join(__dirname, 'views/partials/'),
+  helpers: {
+    eq: function(a, b) {
+      return a === b;
+    }
+  }
 }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
@@ -56,6 +62,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/dashboard', dashboardRouter);
+app.use('/device-access', deviceAccessRouter);
 app.use('/api/devices', devicesRouter);
 app.use('/api/alerts', alertsRouter);
 

@@ -4,9 +4,10 @@ const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const config = require('../config/env');
 const { routeLogger } = require('../utils/logger');
+const { requireAuthAPI, requireAdminAPI } = require('../middleware/auth');
 
 /* GET users listing */
-router.get('/', async (req, res, next) => {
+router.get('/', requireAdminAPI, async (req, res, next) => {
   try {
     const users = await db.query(
       `SELECT id, name, email, role, is_active, created_at, last_login 

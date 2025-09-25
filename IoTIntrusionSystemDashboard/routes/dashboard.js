@@ -2,10 +2,11 @@ var express = require('express');
 var router = express.Router();
 const db = require('../config/database');
 const { routeLogger } = require('../utils/logger');
-const { requireAuth, requireAuthAPI } = require('../middleware/auth');
+const { requireAuthOrDeny, requireAuthAPI } = require('../middleware/auth');
+const { createAllSampleData } = require('../utils/createSampleData');
 
 /* GET dashboard page. */
-router.get('/', requireAuth, async (req, res, next) => {
+router.get('/', requireAuthOrDeny, async (req, res, next) => {
   
   try {
     // Get dashboard statistics from database
@@ -108,6 +109,32 @@ router.get('/api/stats', requireAuthAPI, async (req, res, next) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch dashboard statistics'
+    });
+  }
+});
+
+/* POST populate dashboard with sample data */
+router.post('/api/populate-sample-data', requireAuthAPI, async (req, res, next) => {
+  try {
+    routeLogger.info('Creating sample data for dashboard', {
+      userId: req.session.user.id,
+      userEmail: req.session.user.email
+    });
+    
+    await createAllSampleData();
+    
+    res.json({
+      success: true,
+      message: 'Sample data created successfully. Refresh the dashboard to see the updated statistics.'
+    });
+  } catch (error) {
+    routeLogger.error('Sample data creation error', {
+      error: error.message
+    });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create sample data',
+      message: error.message
     });
   }
 });

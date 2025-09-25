@@ -31,4 +31,16 @@ router.get('/', function(req, res, next) {
   });
 });
 
+/* GET access denied page. */
+router.get('/access-denied', function(req, res, next) {
+  // Check if this came from a failed login attempt
+  const fromLogin = req.query.from === 'login';
+  
+  res.render('access-denied', {
+    title: 'Access Denied - IoT Intrusion Detection System',
+    pageTitle: 'Access Denied',
+    fromLogin: fromLogin
+  });
+});
+
 module.exports = router;

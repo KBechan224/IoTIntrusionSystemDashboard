@@ -27,6 +27,24 @@ function requireAuth(req, res, next) {
 }
 
 /**
+ * Middleware to check if user is authenticated
+ * Redirects to access denied page if not authenticated (for unregistered users)
+ */
+function requireAuthOrDeny(req, res, next) {
+  if (req.session && req.session.user) {
+    return next();
+  } else {
+    routeLogger.warn('Unauthorized access attempt - redirecting to access denied', {
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      originalUrl: req.originalUrl
+    });
+    
+    return res.redirect('/access-denied');
+  }
+}
+
+/**
  * Middleware to check if user is authenticated for API endpoints
  * Returns JSON error if not authenticated
  */
@@ -112,11 +130,13 @@ function redirectIfAuth(req, res, next) {
 function attachUser(req, res, next) {
   res.locals.user = req.session?.user || null;
   res.locals.isAuthenticated = !!(req.session && req.session.user);
+  res.locals.isAdmin = !!(req.session && req.session.user && req.session.user.role === 'admin');
   next();
 }
 
 module.exports = {
   requireAuth,
+  requireAuthOrDeny,
   requireAuthAPI,
   requireAdmin,
   requireAdminAPI,

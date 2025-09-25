@@ -5,7 +5,7 @@
                 <h1 class="mb-0">{{pageTitle}}</h1>
             </div>
             <div>
-                <button class="btn btn-outline-light me-2">
+                <button class="btn btn-outline-light me-2" id="refreshBtn">
                     <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                 </button>
                 <a href='/auth/logout' class="btn btn-light">
@@ -28,7 +28,7 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0">{{stats.totalDevices}}</h3>
+                        <h3 class="fw-bold mb-0" id="totalDevices">{{stats.totalDevices}}</h3>
                         <p class="text-muted mb-0">Total Devices</p>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0 text-danger">{{stats.activeThreats}}</h3>
+                        <h3 class="fw-bold mb-0 text-danger" id="activeThreats">{{stats.activeThreats}}</h3>
                         <p class="text-muted mb-0">Active Threats</p>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0 text-warning">{{stats.blockedAttempts}}</h3>
+                        <h3 class="fw-bold mb-0 text-warning" id="blockedAttempts">{{stats.blockedAttempts}}</h3>
                         <p class="text-muted mb-0">Blocked Attempts</p>
                     </div>
                 </div>
@@ -226,3 +226,91 @@
         </div>
     </div>
 </div>
+
+<script>
+// Dashboard auto-refresh functionality
+let autoRefreshInterval;
+
+// Function to update dashboard stats
+async function updateDashboardStats() {
+    try {
+        const response = await fetch('/dashboard/api/stats');
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update stat numbers with animation
+            document.getElementById('totalDevices').textContent = data.totalDevices;
+            document.getElementById('activeThreats').textContent = data.activeThreats;
+            document.getElementById('blockedAttempts').textContent = data.blockedAttempts;
+            
+            // Add a subtle animation to show update
+            const elements = ['totalDevices', 'activeThreats', 'blockedAttempts'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                element.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                }, 200);
+            });
+            
+            console.log('Dashboard stats updated successfully');
+        }
+    } catch (error) {
+        console.error('Failed to update dashboard stats:', error);
+    }
+}
+
+// Function to simulate increasing blocked attempts (for demo)
+function simulateSecurityActivity() {
+    // This would be replaced by real security monitoring in production
+    const currentBlocked = parseInt(document.getElementById('blockedAttempts').textContent);
+    const randomIncrease = Math.floor(Math.random() * 3); // 0-2 new blocked attempts
+    
+    if (randomIncrease > 0) {
+        document.getElementById('blockedAttempts').textContent = currentBlocked + randomIncrease;
+        
+        // Flash the blocked attempts counter
+        const element = document.getElementById('blockedAttempts');
+        element.style.background = 'rgba(255, 193, 7, 0.2)';
+        setTimeout(() => {
+            element.style.background = 'transparent';
+        }, 1000);
+    }
+}
+
+// Manual refresh button
+document.getElementById('refreshBtn').addEventListener('click', function() {
+    const icon = this.querySelector('i');
+    icon.style.animation = 'spin 1s linear';
+    
+    updateDashboardStats();
+    
+    setTimeout(() => {
+        icon.style.animation = 'none';
+    }, 1000);
+});
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Update stats every 30 seconds
+    autoRefreshInterval = setInterval(updateDashboardStats, 30000);
+    
+    // Simulate security activity every 10 seconds (demo only)
+    setInterval(simulateSecurityActivity, 10000);
+    
+    console.log('Dashboard auto-refresh started');
+});
+
+// CSS for spin animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    #totalDevices, #activeThreats, #blockedAttempts {
+        transition: all 0.3s ease;
+    }
+`;
+document.head.appendChild(style);
+</script>

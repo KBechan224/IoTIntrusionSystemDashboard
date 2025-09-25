@@ -2,9 +2,10 @@ var express = require('express');
 var router = express.Router();
 const db = require('../config/database');
 const { routeLogger } = require('../utils/logger');
+const { requireAuthAPI } = require('../middleware/auth');
 
 /* GET alerts listing */
-router.get('/', async (req, res, next) => {
+router.get('/', requireAuthAPI, async (req, res, next) => {
   try {
     const { status, severity, device_id, limit = 50, offset = 0 } = req.query;
     
