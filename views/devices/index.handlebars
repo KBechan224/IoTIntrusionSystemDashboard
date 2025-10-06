@@ -1,0 +1,167 @@
+<div class="bg-primary text-white py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-0">{{pageTitle}}</h1>
+                <p class="mb-0 opacity-75">View and manage all connected devices</p>
+            </div>
+            <div>
+                <a href='/dashboard' class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-funnel text-primary me-2"></i>Filters
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Status</option>
+                        <option value="online" {{#eq filters.status "online"}}selected{{/eq}}>Online</option>
+                        <option value="offline" {{#eq filters.status "offline"}}selected{{/eq}}>Offline</option>
+                        <option value="maintenance" {{#eq filters.status "maintenance"}}selected{{/eq}}>Maintenance</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="device_type" class="form-label">Device Type</label>
+                    <select class="form-select" id="device_type" name="device_type">
+                        <option value="">All Types</option>
+                        <option value="sensor" {{#eq filters.device_type "sensor"}}selected{{/eq}}>Sensor</option>
+                        <option value="camera" {{#eq filters.device_type "camera"}}selected{{/eq}}>Camera</option>
+                        <option value="gateway" {{#eq filters.device_type "gateway"}}selected{{/eq}}>Gateway</option>
+                        <option value="actuator" {{#eq filters.device_type "actuator"}}selected{{/eq}}>Actuator</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-1"></i>Filter
+                    </button>
+                    <a href="/devices" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-x me-1"></i>Clear
+                    </a>
+                    <a href="/devices/add" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-1"></i>Add Device
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{#if success}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>{{success}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {{/if}}
+
+    <!-- Devices List -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-cpu text-primary me-2"></i>All Devices ({{pagination.totalDevices}})
+            </h5>
+        </div>
+        <div class="card-body">
+            {{#if devices}}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>IP Address</th>
+                            <th>MAC Address</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Last Seen</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each devices}}
+                        <tr>
+                            <td>
+                                <strong>{{this.name}}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{this.deviceType}}</span>
+                            </td>
+                            <td>{{this.ipAddress}}</td>
+                            <td><code>{{this.macAddress}}</code></td>
+                            <td>
+                                <span class="badge bg-{{this.statusBadge}}">{{this.statusText}}</span>
+                            </td>
+                            <td>{{this.location}}</td>
+                            <td>{{this.lastSeen}}</td>
+                            <td>
+                                <a href="/devices/manage/{{this.id}}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-gear"></i> Manage
+                                </a>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {{#if pagination.totalPages}}
+            <nav aria-label="Devices pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {{#if pagination.hasPrev}}
+                    <li class="page-item">
+                        <a class="page-link" href="/devices?page={{pagination.prevPage}}&status={{filters.status}}&device_type={{filters.device_type}}">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    {{else}}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </span>
+                    </li>
+                    {{/if}}
+
+                    {{#each (range 1 pagination.totalPages)}}
+                    <li class="page-item {{#eq this ../pagination.currentPage}}active{{/eq}}">
+                        <a class="page-link" href="/devices?page={{this}}&status={{filters.status}}&device_type={{filters.device_type}}">{{this}}</a>
+                    </li>
+                    {{/each}}
+
+                    {{#if pagination.hasNext}}
+                    <li class="page-item">
+                        <a class="page-link" href="/devices?page={{pagination.nextPage}}&status={{filters.status}}&device_type={{filters.device_type}}">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {{else}}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </span>
+                    </li>
+                    {{/if}}
+                </ul>
+            </nav>
+            {{/if}}
+            {{else}}
+            <div class="text-center py-5">
+                <i class="bi bi-cpu text-muted fs-1 mb-3"></i>
+                <h5 class="text-muted">No Devices Found</h5>
+                <p class="text-muted">There are currently no devices matching your criteria.</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</div>

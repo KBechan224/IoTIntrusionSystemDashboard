@@ -1,0 +1,277 @@
+<div class="bg-primary text-white py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-0">{{pageTitle}}</h1>
+            </div>
+            <div>
+                <button class="btn btn-outline-light me-2" id="refreshBtn">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
+                <a href='/auth/logout' class="btn btn-light">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-laptop text-primary fs-3"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0" id="totalDevices">{{stats.totalDevices}}</h3>
+                        <p class="text-muted mb-0">Total Devices</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-danger" id="activeThreats">{{stats.activeThreats}}</h3>
+                        <p class="text-muted mb-0">Active Threats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-shield-x text-warning fs-3"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-warning" id="blockedAttempts">{{stats.blockedAttempts}}</h3>
+                        <p class="text-muted mb-0">Blocked Attempts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-check-circle text-success fs-3"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-success">{{stats.systemStatus}}</h3>
+                        <p class="text-muted mb-0">System Status</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="row g-4">
+        <!-- Recent Alerts -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-bell text-primary me-2"></i>Recent Security Alerts
+                    </h5>
+                    <a href="/alerts" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {{#each recentAlerts}}
+                    <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-semibold">{{this.type}}</h6>
+                            <p class="text-muted mb-1">{{this.device}}</p>
+                            <small class="text-muted">{{this.timestamp}}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-primary">{{this.severity}}</span>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Status -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-cpu text-primary me-2"></i>Device Status
+                    </h5>
+                    <a href="/devices" class="btn btn-sm btn-outline-primary">Manage</a>
+                </div>
+                <div class="card-body">
+                    {{#each devices}}
+                    <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-semibold">{{this.name}}</h6>
+                            <small class="text-muted">Last seen: {{this.lastSeen}}</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success">{{this.status}}</span>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Health -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-activity text-primary me-2"></i>System Health
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-semibold">CPU Usage</small>
+                            <small class="text-muted">45%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-semibold">Memory Usage</small>
+                            <small class="text-muted">62%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 62%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-semibold">Network Load</small>
+                            <small class="text-muted">28%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 28%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-semibold">Storage</small>
+                            <small class="text-muted">73%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 73%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dashboard auto-refresh functionality
+let autoRefreshInterval;
+
+// Function to update dashboard stats
+async function updateDashboardStats() {
+    try {
+        const response = await fetch('/dashboard/api/stats');
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update stat numbers with animation
+            document.getElementById('totalDevices').textContent = data.totalDevices;
+            document.getElementById('activeThreats').textContent = data.activeThreats;
+            document.getElementById('blockedAttempts').textContent = data.blockedAttempts;
+            
+            // Add a subtle animation to show update
+            const elements = ['totalDevices', 'activeThreats', 'blockedAttempts'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                element.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                }, 200);
+            });
+            
+            console.log('Dashboard stats updated successfully');
+        }
+    } catch (error) {
+        console.error('Failed to update dashboard stats:', error);
+    }
+}
+
+// Function to simulate increasing blocked attempts (for demo)
+function simulateSecurityActivity() {
+    // This would be replaced by real security monitoring in production
+    const currentBlocked = parseInt(document.getElementById('blockedAttempts').textContent);
+    const randomIncrease = Math.floor(Math.random() * 3); // 0-2 new blocked attempts
+    
+    if (randomIncrease > 0) {
+        document.getElementById('blockedAttempts').textContent = currentBlocked + randomIncrease;
+        
+        // Flash the blocked attempts counter
+        const element = document.getElementById('blockedAttempts');
+        element.style.background = 'rgba(255, 193, 7, 0.2)';
+        setTimeout(() => {
+            element.style.background = 'transparent';
+        }, 1000);
+    }
+}
+
+// Manual refresh button
+document.getElementById('refreshBtn').addEventListener('click', function() {
+    const icon = this.querySelector('i');
+    icon.style.animation = 'spin 1s linear';
+    
+    updateDashboardStats();
+    
+    setTimeout(() => {
+        icon.style.animation = 'none';
+    }, 1000);
+});
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Update stats every 30 seconds
+    autoRefreshInterval = setInterval(updateDashboardStats, 30000);
+    
+    // Simulate security activity every 10 seconds (demo only)
+    setInterval(simulateSecurityActivity, 10000);
+    
+    console.log('Dashboard auto-refresh started');
+});
+
+// CSS for spin animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    #totalDevices, #activeThreats, #blockedAttempts {
+        transition: all 0.3s ease;
+    }
+`;
+document.head.appendChild(style);
+</script>

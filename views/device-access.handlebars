@@ -1,0 +1,379 @@
+<div class="bg-primary text-white py-4 mb-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-0">{{pageTitle}}</h1>
+                <p class="mb-0 opacity-75">Access and monitor IoT devices</p>
+            </div>
+            <div>
+                <a href='/auth/logout' class="btn btn-light">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Connection Status Alert -->
+    {{#if connectedDevice}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <div class="flex-grow-1">
+                <strong>Connected to {{connectedDevice.name}}</strong>
+                <p class="mb-0">You are currently connected to this IoT device. Connection established at {{connectedDevice.connectedAt}}.</p>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if error}}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <div>
+                <strong>Access Denied</strong>
+                <p class="mb-0">{{error}}</p>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if warning}}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-shield-exclamation me-2"></i>
+            <div>
+                <strong>Security Warning</strong>
+                <p class="mb-0">{{warning}}</p>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    <div class="row g-4">
+        <!-- Available Devices -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-router text-primary me-2"></i>Available IoT Devices
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" id="refreshDevices">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    {{#if devices.length}}
+                    <div class="row g-3">
+                        {{#each devices}}
+                        <div class="col-md-6">
+                            <div class="card border device-card h-100" data-device-id="{{this.id}}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="card-title mb-1 fw-semibold">{{this.name}}</h6>
+                                            <small class="text-muted">{{this.deviceType}}</small>
+                                        </div>
+                                        <span class="badge {{#if (eq this.status 'online')}}bg-success{{else}}bg-secondary{{/if}}">
+                                            {{this.status}}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="device-info small text-muted mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Location:</span>
+                                            <span>{{this.location}}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>IP Address:</span>
+                                            <span>{{this.ipAddress}}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Last Seen:</span>
+                                            <span>{{this.lastSeen}}</span>
+                                        </div>
+                                        {{#if this.hasSecurityEnabled}}
+                                        <div class="d-flex justify-content-between text-success">
+                                            <span><i class="bi bi-shield-check me-1"></i>Security:</span>
+                                            <span>Enabled</span>
+                                        </div>
+                                        {{else}}
+                                        <div class="d-flex justify-content-between text-warning">
+                                            <span><i class="bi bi-shield-exclamation me-1"></i>Security:</span>
+                                            <span>Disabled</span>
+                                        </div>
+                                        {{/if}}
+                                    </div>
+
+                                    <div class="d-grid">
+                                        {{#if (eq ../connectedDevice.id this.id)}}
+                                        <button class="btn btn-outline-danger disconnect-btn" data-device-id="{{this.id}}">
+                                            <i class="bi bi-plug me-1"></i>Disconnect
+                                        </button>
+                                        {{else}}
+                                        <button class="btn btn-primary access-btn" data-device-id="{{this.id}}" {{#unless (eq this.status 'online')}}disabled{{/unless}}>
+                                            <i class="bi bi-link-45deg me-1"></i>Access Device
+                                        </button>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-5">
+                        <i class="bi bi-router text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3 mb-2">No Devices Available</h5>
+                        <p class="text-muted">There are currently no IoT devices available for access.</p>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Details Sidebar -->
+        <div class="col-lg-4">
+            {{#if connectedDevice}}
+            <!-- Connected Device Details -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white border-0">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-check-circle me-2"></i>Connected Device
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-semibold">{{connectedDevice.name}}</h6>
+                    <p class="text-muted small mb-3">{{connectedDevice.deviceType}} • {{connectedDevice.location}}</p>
+                    
+                    <div class="mb-3">
+                        <h6 class="small fw-semibold mb-2">Device Information</h6>
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>IP Address:</span>
+                                <span class="text-muted">{{connectedDevice.ipAddress}}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>MAC Address:</span>
+                                <span class="text-muted">{{connectedDevice.macAddress}}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Firmware:</span>
+                                <span class="text-muted">{{connectedDevice.firmwareVersion}}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Status:</span>
+                                <span class="badge bg-success">{{connectedDevice.status}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="small fw-semibold mb-2">Connection Details</h6>
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Connected At:</span>
+                                <span class="text-muted">{{connectedDevice.connectedAt}}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Session Duration:</span>
+                                <span class="text-muted" id="sessionDuration">{{connectedDevice.sessionDuration}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-danger disconnect-btn" data-device-id="{{connectedDevice.id}}">
+                            <i class="bi bi-plug me-1"></i>Disconnect
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <!-- Access Instructions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-info-circle text-primary me-2"></i>Access Instructions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="small fw-semibold mb-2">How to Access Devices</h6>
+                        <ol class="small text-muted mb-0">
+                            <li>Select an online device from the list</li>
+                            <li>Click "Access Device" to connect</li>
+                            <li>Follow any security prompts</li>
+                            <li>Monitor device status and data</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="alert alert-warning small" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>Security Notice:</strong> Unauthorized access attempts are logged and monitored. Only access devices you have permission to use.
+                    </div>
+                    
+                    <div class="small text-muted">
+                        <p class="mb-1"><i class="bi bi-shield-check text-success me-1"></i> <strong>Secured devices</strong> require authentication</p>
+                        <p class="mb-0"><i class="bi bi-shield-exclamation text-warning me-1"></i> <strong>Unsecured devices</strong> may be accessed directly</p>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-0">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-clock-history text-primary me-2"></i>Recent Activity
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{#if recentActivity.length}}
+                    {{#each recentActivity}}
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="me-2">
+                            <i class="bi {{this.icon}} {{this.iconClass}}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <p class="small mb-1">{{this.message}}</p>
+                            <small class="text-muted">{{this.timestamp}}</small>
+                        </div>
+                    </div>
+                    {{/each}}
+                    {{else}}
+                    <p class="text-muted small mb-0">No recent activity</p>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Device access functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Access device button handlers
+    document.querySelectorAll('.access-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const deviceId = this.dataset.deviceId;
+            const originalText = this.innerHTML;
+            
+            // Show loading state
+            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Connecting...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch(`/device-access/connect/${deviceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirect to refresh the page with connection status
+                    window.location.reload();
+                } else {
+                    // Show error message
+                    alert(result.message || 'Failed to connect to device');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Network error occurred while connecting');
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
+        });
+    });
+    
+    // Disconnect device button handlers
+    document.querySelectorAll('.disconnect-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const deviceId = this.dataset.deviceId;
+            const originalText = this.innerHTML;
+            
+            // Show loading state
+            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Disconnecting...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch(`/device-access/disconnect/${deviceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirect to refresh the page
+                    window.location.reload();
+                } else {
+                    alert(result.message || 'Failed to disconnect from device');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            } catch (error) {
+                console.error('Disconnection error:', error);
+                alert('Network error occurred while disconnecting');
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
+        });
+    });
+    
+    // Refresh devices button
+    document.getElementById('refreshDevices').addEventListener('click', function() {
+        const icon = this.querySelector('i');
+        icon.style.animation = 'spin 1s linear';
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    });
+    
+    // Update session duration if connected
+    {{#if connectedDevice}}
+    const connectedAt = new Date('{{connectedDevice.connectedAt}}');
+    function updateSessionDuration() {
+        const now = new Date();
+        const duration = Math.floor((now - connectedAt) / 1000); // seconds
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        document.getElementById('sessionDuration').textContent = `${minutes}m ${seconds}s`;
+    }
+    
+    // Update every second
+    setInterval(updateSessionDuration, 1000);
+    {{/if}}
+});
+
+// CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .device-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .device-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+    .access-btn, .disconnect-btn {
+        transition: all 0.3s ease;
+    }
+`;
+document.head.appendChild(style);
+</script>

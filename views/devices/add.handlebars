@@ -1,0 +1,133 @@
+<div class="bg-primary text-white py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-0">{{pageTitle}}</h1>
+                <p class="mb-0 opacity-75">Add a new device to the IoT network</p>
+            </div>
+            <div>
+                <a href='/devices' class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Devices
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-plus-circle text-primary me-2"></i>Device Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {{#if error}}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>{{error}}
+                    </div>
+                    {{/if}}
+
+                    <form method="POST" action="/devices/add">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-semibold">
+                                    Device Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="name" name="name"
+                                       value="{{formData.name}}" required>
+                                <div class="form-text">A descriptive name for the device</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="device_type" class="form-label fw-semibold">
+                                    Device Type <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="device_type" name="device_type" required>
+                                    <option value="">Select device type</option>
+                                    <option value="sensor" {{#eq formData.device_type "sensor"}}selected{{/eq}}>Sensor</option>
+                                    <option value="camera" {{#eq formData.device_type "camera"}}selected{{/eq}}>Camera</option>
+                                    <option value="gateway" {{#eq formData.device_type "gateway"}}selected{{/eq}}>Gateway</option>
+                                    <option value="actuator" {{#eq formData.device_type "actuator"}}selected{{/eq}}>Actuator</option>
+                                    <option value="controller" {{#eq formData.device_type "controller"}}selected{{/eq}}>Controller</option>
+                                    <option value="other" {{#eq formData.device_type "other"}}selected{{/eq}}>Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="mac_address" class="form-label fw-semibold">
+                                    MAC Address
+                                </label>
+                                <input type="text" class="form-control" id="mac_address" name="mac_address"
+                                       value="{{formData.mac_address}}"
+                                       pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+                                       placeholder="00:11:22:33:44:55">
+                                <div class="form-text">Format: XX:XX:XX:XX:XX:XX (optional)</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="ip_address" class="form-label fw-semibold">
+                                    IP Address
+                                </label>
+                                <input type="text" class="form-control" id="ip_address" name="ip_address"
+                                       value="{{formData.ip_address}}"
+                                       pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                                       placeholder="192.168.1.100">
+                                <div class="form-text">IPv4 address (optional)</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="location" class="form-label fw-semibold">
+                                    Location
+                                </label>
+                                <input type="text" class="form-control" id="location" name="location"
+                                       value="{{formData.location}}"
+                                       placeholder="Living Room, Office, etc.">
+                                <div class="form-text">Physical location of the device (optional)</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="firmware_version" class="form-label fw-semibold">
+                                    Firmware Version
+                                </label>
+                                <input type="text" class="form-control" id="firmware_version" name="firmware_version"
+                                       value="{{formData.firmware_version}}"
+                                       placeholder="1.0.0">
+                                <div class="form-text">Current firmware version (optional)</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Add Device
+                            </button>
+                            <a href="/devices" class="btn btn-outline-secondary ms-2">
+                                <i class="bi bi-x me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-info-circle text-info me-2"></i>Help & Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 small text-muted">
+                        <li><strong>Device Name:</strong> Choose a descriptive name that helps identify the device</li>
+                        <li><strong>Device Type:</strong> Select the most appropriate category for your device</li>
+                        <li><strong>MAC Address:</strong> Physical address of the network interface (required for network monitoring)</li>
+                        <li><strong>IP Address:</strong> Current IP address if known (will be auto-detected when device comes online)</li>
+                        <li><strong>Location:</strong> Helps with organizing and locating devices physically</li>
+                        <li><strong>Firmware Version:</strong> Useful for tracking device updates and compatibility</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
