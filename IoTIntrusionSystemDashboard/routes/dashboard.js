@@ -2,11 +2,11 @@ var express = require('express');
 var router = express.Router();
 const db = require('../config/database');
 const { routeLogger } = require('../utils/logger');
-const { requireAuthOrDeny, requireAuthAPI } = require('../middleware/auth');
+const { requireAuthAPI, requireAdmin } = require('../middleware/auth');
 const { createAllSampleData } = require('../utils/createSampleData');
 
 /* GET dashboard page. */
-router.get('/', requireAuthOrDeny, async (req, res, next) => {
+router.get('/', requireAdmin, async (req, res, next) => {
   
   try {
     // Get dashboard statistics from database

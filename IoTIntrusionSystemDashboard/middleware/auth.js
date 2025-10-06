@@ -117,8 +117,12 @@ function requireAdminAPI(req, res, next) {
  */
 function redirectIfAuth(req, res, next) {
   if (req.session && req.session.user) {
-    // If user is already logged in, redirect to dashboard
-    return res.redirect('/dashboard');
+    // If user is admin, redirect to dashboard, otherwise to device access
+    if (req.session.user.role === 'admin') {
+      return res.redirect('/dashboard');
+    } else {
+      return res.redirect('/device-access');
+    }
   } else {
     return next();
   }

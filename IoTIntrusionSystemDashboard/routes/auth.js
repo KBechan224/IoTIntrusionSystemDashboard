@@ -16,6 +16,10 @@ router.get('/login', redirectIfAuth, (req, res, next) => {
     message = 'You have been successfully logged out.';
   }
   
+  if (req.query.message === 'password_reset') {
+    message = 'Your password has been successfully reset. Please log in with your new password.';
+  }
+  
   if (req.query.error === 'logout_failed') {
     error = 'Logout failed. Please try again.';
   }
@@ -99,7 +103,14 @@ router.post('/login', async (req, res, next) => {
     };
     
     // Redirect to the originally requested page or dashboard
-    const redirectTo = req.session.returnTo || '/dashboard';
+    let redirectTo = req.session.returnTo;
+    if (!redirectTo) {
+      if (user.role === 'admin') {
+        redirectTo = '/dashboard';
+      } else {
+        redirectTo = '/device-access';
+      }
+    }
     delete req.session.returnTo; // Clear the returnTo session
     
     res.redirect(redirectTo);
@@ -219,6 +230,140 @@ router.post('/register', async (req, res, next) => {
       pageTitle: 'Register',
       error: errorMessage,
       formData: req.body // Preserve form data
+    });
+  }
+});
+
+/* GET forgot password page */
+router.get('/forgot-password', redirectIfAuth, (req, res, next) => {
+  res.render('auth/forgot-password', {
+    title: 'Forgot Password - IoT Intrusion System',
+    pageTitle: 'Forgot Password'
+  });
+});
+
+/* POST forgot password */
+router.post('/forgot-password', async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+    
+    if (!name || !email) {
+      return res.render('auth/forgot-password', {
+        title: 'Forgot Password - IoT Intrusion System',
+        pageTitle: 'Forgot Password',
+        error: 'Please provide both full name and email address.'
+      });
+    }
+    
+    // Find user by name and email
+    const result = await db.query(
+      'SELECT id, name, email FROM users WHERE name = $1 AND email = $2 AND is_active = true',
+      [name, email]
+    );
+    
+    if (result.rows.length === 0) {
+      routeLogger.warn('Forgot password attempt with invalid credentials', {
+        name: name,
+        email: email,
+        ip: req.ip
+      });
+      return res.render('auth/forgot-password', {
+        title: 'Forgot Password - IoT Intrusion System',
+        pageTitle: 'Forgot Password',
+        error: 'No account found with the provided name and email address.'
+      });
+    }
+    
+    const user = result.rows[0];
+    
+    // For now, redirect to reset password page with user id (in production, use secure token)
+    res.redirect(`/auth/reset-password?user=${user.id}`);
+    
+  } catch (error) {
+    routeLogger.error('Forgot password error', {
+      error: error.message
+    });
+    res.render('auth/forgot-password', {
+      title: 'Forgot Password - IoT Intrusion System',
+      pageTitle: 'Forgot Password',
+      error: 'An error occurred. Please try again.'
+    });
+  }
+});
+
+/* GET reset password page */
+router.get('/reset-password', (req, res, next) => {
+  const userId = req.query.user;
+  if (!userId) {
+    return res.redirect('/auth/forgot-password');
+  }
+  
+  res.render('auth/reset-password', {
+    title: 'Reset Password - IoT Intrusion System',
+    pageTitle: 'Reset Password',
+    userId: userId
+  });
+});
+
+/* POST reset password */
+router.post('/reset-password', async (req, res, next) => {
+  try {
+    const { userId, password, confirmPassword } = req.body;
+    
+    if (!userId || !password || !confirmPassword) {
+      return res.render('auth/reset-password', {
+        title: 'Reset Password - IoT Intrusion System',
+        pageTitle: 'Reset Password',
+        userId: userId,
+        error: 'All fields are required.'
+      });
+    }
+    
+    if (password !== confirmPassword) {
+      return res.render('auth/reset-password', {
+        title: 'Reset Password - IoT Intrusion System',
+        pageTitle: 'Reset Password',
+        userId: userId,
+        error: 'Passwords do not match.'
+      });
+    }
+    
+    if (password.length < 8) {
+      return res.render('auth/reset-password', {
+        title: 'Reset Password - IoT Intrusion System',
+        pageTitle: 'Reset Password',
+        userId: userId,
+        error: 'Password must be at least 8 characters long.'
+      });
+    }
+    
+    // Verify user exists
+    const userResult = await db.query('SELECT id FROM users WHERE id = $1 AND is_active = true', [userId]);
+    if (userResult.rows.length === 0) {
+      return res.redirect('/auth/forgot-password');
+    }
+    
+    // Hash new password
+    const saltRounds = config.security.bcryptRounds;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+    
+    // Update password
+    await db.query('UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', 
+      [passwordHash, userId]);
+    
+    routeLogger.info('Password reset successful', { userId: userId });
+    
+    res.redirect('/auth/login?message=password_reset');
+    
+  } catch (error) {
+    routeLogger.error('Reset password error', {
+      error: error.message
+    });
+    res.render('auth/reset-password', {
+      title: 'Reset Password - IoT Intrusion System',
+      pageTitle: 'Reset Password',
+      userId: userId,
+      error: 'An error occurred. Please try again.'
     });
   }
 });

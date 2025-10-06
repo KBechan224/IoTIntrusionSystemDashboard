@@ -39,6 +39,169 @@ router.get('/', requireAdminAPI, async (req, res, next) => {
   }
 });
 
+const { requireAuth } = require('../middleware/auth');
+
+/* GET user profile page */
+router.get('/profile', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.session.user.id;
+    
+    const result = await db.query(
+      `SELECT id, name, email, role, is_active, created_at, last_login 
+       FROM users 
+       WHERE id = $1`,
+      [userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).render('error', {
+        title: 'User Not Found',
+        message: 'Your profile could not be found.',
+        error: { status: 404 }
+      });
+    }
+    
+    const user = result.rows[0];
+    
+    res.render('users/profile', {
+      title: 'User Profile - IoT Intrusion System',
+      pageTitle: 'User Profile',
+      profile: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.is_active,
+        createdAt: user.created_at,
+        lastLogin: user.last_login
+      }
+    });
+  } catch (error) {
+    routeLogger.error('Get profile error', {
+      userId: req.session.user.id,
+      error: error.message
+    });
+    res.status(500).render('error', {
+      title: 'Profile Error',
+      message: 'An error occurred while loading your profile.',
+      error: { status: 500 }
+    });
+  }
+});
+
+/* GET user settings page */
+router.get('/settings', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.session.user.id;
+    
+    const result = await db.query(
+      `SELECT id, name, email, role, is_active, created_at, last_login 
+       FROM users 
+       WHERE id = $1`,
+      [userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).render('error', {
+        title: 'User Not Found',
+        message: 'Your profile could not be found.',
+        error: { status: 404 }
+      });
+    }
+    
+    const user = result.rows[0];
+    
+    res.render('users/settings', {
+      title: 'User Settings - IoT Intrusion System',
+      pageTitle: 'User Settings',
+      profile: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.is_active,
+        createdAt: user.created_at,
+        lastLogin: user.last_login
+      }
+    });
+  } catch (error) {
+    routeLogger.error('Get settings error', {
+      userId: req.session.user.id,
+      error: error.message
+    });
+    res.status(500).render('error', {
+      title: 'Settings Error',
+      message: 'An error occurred while loading your settings.',
+      error: { status: 500 }
+    });
+  }
+});
+
+/* POST update user settings */
+router.post('/settings', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.session.user.id;
+    const { name, email } = req.body;
+    
+    if (!name || !email) {
+      return res.render('users/settings', {
+        title: 'User Settings - IoT Intrusion System',
+        pageTitle: 'User Settings',
+        profile: req.body,
+        error: 'Name and email are required.'
+      });
+    }
+    
+    // Check if email is already taken by another user
+    const emailCheck = await db.query(
+      'SELECT id FROM users WHERE email = $1 AND id != $2',
+      [email, userId]
+    );
+    
+    if (emailCheck.rows.length > 0) {
+      return res.render('users/settings', {
+        title: 'User Settings - IoT Intrusion System',
+        pageTitle: 'User Settings',
+        profile: req.body,
+        error: 'Email address is already in use.'
+      });
+    }
+    
+    // Update user
+    await db.query(
+      'UPDATE users SET name = $1, email = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [name, email, userId]
+    );
+    
+    // Update session
+    req.session.user.name = name;
+    req.session.user.email = email;
+    
+    routeLogger.info('User settings updated', { userId: userId });
+    
+    res.render('users/settings', {
+      title: 'User Settings - IoT Intrusion System',
+      pageTitle: 'User Settings',
+      profile: {
+        id: userId,
+        name: name,
+        email: email
+      },
+      success: 'Your settings have been updated successfully.'
+    });
+  } catch (error) {
+    routeLogger.error('Update settings error', {
+      userId: req.session.user.id,
+      error: error.message
+    });
+    res.status(500).render('error', {
+      title: 'Settings Error',
+      message: 'An error occurred while updating your settings.',
+      error: { status: 500 }
+    });
+  }
+});
+
 /* GET user by ID */
 router.get('/:id', async (req, res, next) => {
   try {

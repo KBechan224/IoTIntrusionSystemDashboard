@@ -34,6 +34,13 @@ app.engine('handlebars', engine({
   helpers: {
     eq: function(a, b) {
       return a === b;
+    },
+    range: function(start, end) {
+      const result = [];
+      for (let i = start; i <= end; i++) {
+        result.push(i);
+      }
+      return result;
     }
   }
 }));
@@ -65,6 +72,10 @@ app.use('/dashboard', dashboardRouter);
 app.use('/device-access', deviceAccessRouter);
 app.use('/api/devices', devicesRouter);
 app.use('/api/alerts', alertsRouter);
+
+// View routes
+app.use('/alerts', require('./routes/alerts-view'));
+app.use('/devices', require('./routes/devices-view'));
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
